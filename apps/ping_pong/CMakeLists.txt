@@ -2,12 +2,14 @@
 
 cmake_minimum_required(VERSION 3.13.1)
 
-set(COMPATIBLE_BOARDS disco_l475_iot1 olimex_stm32_e407 native_posix nucleo_h743zi nucleo_f746zg blackpill_f411ce blackpill_f401ce)
+set(COMPATIBLE_BOARDS disco_l475_iot1 olimex_stm32_e407 native_posix nucleo_h743zi nucleo_f746zg blackpill_f411ce blackpill_f401ce kv260_r5)
 if(NOT ${BOARD} IN_LIST COMPATIBLE_BOARDS)
     message(FATAL_ERROR "App $ENV{UROS_APP} not compatible with board ${BOARD}")
 endif()
 
-include($ENV{ZEPHYR_BASE}/cmake/app/boilerplate.cmake NO_POLICY_SCOPE)
+# include($ENV{ZEPHYR_BASE}/cmake/app/boilerplate.cmake NO_POLICY_SCOPE)
+find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
+
 project(microrosapp C CXX)
 
 set(microros_src_dir   ${MICRO_ROS_FIRMWARE_DIR}/zephyr_apps/microros_extensions)
@@ -107,3 +109,6 @@ foreach(pkg ${INCLUDE_ROS2_PACKAGES})
 endforeach()
 
 target_link_libraries(app PUBLIC microroslib)
+
+# zephyr_code_relocate(LIBRARY kernel LOCATION DDR_TEXT NOCOPY)
+# zephyr_code_relocate(LIBRARY app LOCATION DDR_TEXT NOCOPY)

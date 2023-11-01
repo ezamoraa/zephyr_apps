@@ -12,7 +12,9 @@
 #include <unistd.h>
 #include <time.h>
 
-#include <zephyr.h>
+#include <zephyr/kernel.h>
+
+#include <zephyr/console/console.h>
 
 #define STRING_BUFFER_LEN 50
 
@@ -41,7 +43,7 @@ void ping_timer_callback(rcl_timer_t * timer, int64_t last_call_time)
 		seq_no = rand();
 		sprintf(outcoming_ping.frame_id.data, "%d_%d", seq_no, device_id);
 		outcoming_ping.frame_id.size = strlen(outcoming_ping.frame_id.data);
-		
+
 		// Fill the message timestamp
 		struct timespec ts;
 		clock_gettime(CLOCK_REALTIME, &ts);
@@ -51,7 +53,7 @@ void ping_timer_callback(rcl_timer_t * timer, int64_t last_call_time)
 		// Reset the pong count and publish the ping message
 		pong_count = 0;
 		rcl_publish(&ping_publisher, (const void*)&outcoming_ping, NULL);
-		printf("Ping send seq %s\n", outcoming_ping.frame_id.data);  
+		printf("Ping send seq %s\n", outcoming_ping.frame_id.data);
 	}
 }
 
@@ -80,6 +82,7 @@ void pong_subscription_callback(const void * msgin)
 
 void main(void)
 {
+	printf("Hello from ping pong! %s\n", CONFIG_BOARD);
 	// Set custom transports
 	rmw_uros_set_custom_transport(
 		MICRO_ROS_FRAMING_REQUIRED,
@@ -113,11 +116,9 @@ void main(void)
 	// Create a best effort  pong subscriber
 	RCCHECK(rclc_subscription_init_best_effort(&pong_subscriber, &node, ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Header), "/microROS/pong"));
 
-
 	// Create a 3 seconds ping timer timer,
 	rcl_timer_t timer;
 	RCCHECK(rclc_timer_init_default(&timer, &support, RCL_MS_TO_NS(2000), ping_timer_callback));
-
 
 	// Create executor
 	rclc_executor_t executor;
@@ -145,8 +146,8 @@ void main(void)
 	while(1){
 		rclc_executor_spin_some(&executor, RCL_MS_TO_NS(100));
 		usleep(100000);
-	}	
-	
+	}
+
 	RCCHECK(rcl_publisher_fini(&ping_publisher, &node));
 	RCCHECK(rcl_publisher_fini(&pong_publisher, &node));
 	RCCHECK(rcl_subscription_fini(&ping_subscriber, &node));

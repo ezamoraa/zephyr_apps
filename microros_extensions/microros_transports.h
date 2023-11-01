@@ -18,7 +18,7 @@
 #include <unistd.h>
 
 #if defined(MICRO_ROS_TRANSPORT_SERIAL) || defined(MICRO_ROS_TRANSPORT_SERIALUSB)
-#include <device.h>
+#include <zephyr/device.h>
 #elif defined(MICRO_ROS_TRANSPORT_UDP)
 #include <sys/types.h>
 #include <sys/socket.h>
